@@ -1740,7 +1740,7 @@ FIO_compressFilename_internal(FIO_ctx_t* const fCtx,
     U64 readsize = 0;
     U64 compressedfilesize = 0;
     U64 const fileSize = UTIL_getFileSize(srcFileName);
-    DISPLAYLEVEL(5, "%s: %llu bytes \n", srcFileName, (unsigned long long)fileSize);
+    //DISPLAYLEVEL(5, "%s: %llu bytes \n", srcFileName, (unsigned long long)fileSize);
 
     /* compression format selection */
     switch (prefs->compressionType) {
@@ -1784,18 +1784,18 @@ FIO_compressFilename_internal(FIO_ctx_t* const fCtx,
     /* Status */
     fCtx->totalBytesInput += (size_t)readsize;
     fCtx->totalBytesOutput += (size_t)compressedfilesize;
-    DISPLAY_PROGRESS("\r%79s\r", "");
+    //DISPLAY_PROGRESS("\r%79s\r", "");
     if (FIO_shouldDisplayFileSummary(fCtx)) {
         UTIL_HumanReadableSize_t hr_isize = UTIL_makeHumanReadableSize((U64) readsize);
         UTIL_HumanReadableSize_t hr_osize = UTIL_makeHumanReadableSize((U64) compressedfilesize);
         if (readsize == 0) {
-            DISPLAY_SUMMARY("%-20s :  (%6.*f%s => %6.*f%s, %s) \n",
+            //DISPLAY_SUMMARY("%-20s :  (%6.*f%s => %6.*f%s, %s) \n",
                 srcFileName,
                 hr_isize.precision, hr_isize.value, hr_isize.suffix,
                 hr_osize.precision, hr_osize.value, hr_osize.suffix,
                 dstFileName);
         } else {
-            DISPLAY_SUMMARY("%-20s :%6.2f%%   (%6.*f%s => %6.*f%s, %s) \n",
+            //DISPLAY_SUMMARY("%-20s :%6.2f%%   (%6.*f%s => %6.*f%s, %s) \n",
                 srcFileName,
                 (double)compressedfilesize / (double)readsize * 100,
                 hr_isize.precision, hr_isize.value, hr_isize.suffix,
@@ -1810,7 +1810,7 @@ FIO_compressFilename_internal(FIO_ctx_t* const fCtx,
         U64 const timeLength_ns = UTIL_clockSpanNano(timeStart);
         double const timeLength_s = (double)timeLength_ns / 1000000000;
         double const cpuLoad_pct = (cpuLoad_s / timeLength_s) * 100;
-        DISPLAYLEVEL(4, "%-20s : Completed in %.2f sec  (cpu load : %.0f%%)\n",
+        //DISPLAYLEVEL(4, "%-20s : Completed in %.2f sec  (cpu load : %.0f%%)\n",
                         srcFileName, timeLength_s, cpuLoad_pct);
     }
     return 0;
