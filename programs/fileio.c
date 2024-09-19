@@ -1139,7 +1139,7 @@ static cRess_t FIO_createCResources(FIO_prefs_t* const prefs,
 
     //ress.writeCtx = AIO_WritePool_create(prefs, ZSTD_CStreamOutSize());
     ress.writeCtx = (WritePoolCtx_t*) malloc(sizeof(WritePoolCtx_t)); // assertion is solved #1
-    &ress.writeCtx->base->availableJobsCount = 2 // assertion is solved #2
+    ress.writeCtx->base->availableJobsCount = 2 // assertion is solved #2
     ress.readCtx = AIO_ReadPool_create(prefs, ZSTD_CStreamInSize());
 
     /* Advanced parameters, including dictionary */
