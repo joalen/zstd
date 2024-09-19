@@ -1138,6 +1138,7 @@ static cRess_t FIO_createCResources(FIO_prefs_t* const prefs,
     FIO_initDict(&ress.dict, dictFileName, prefs, &ress.dictFileStat, dictBufferType);   /* works with dictFileName==NULL */
 
     //ress.writeCtx = AIO_WritePool_create(prefs, ZSTD_CStreamOutSize());
+    ress.writeCtx = (WritePoolCtx_t*) malloc(sizeof(WritePoolCtx_t));
     ress.readCtx = AIO_ReadPool_create(prefs, ZSTD_CStreamInSize());
 
     /* Advanced parameters, including dictionary */
