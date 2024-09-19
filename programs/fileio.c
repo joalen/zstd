@@ -1840,27 +1840,27 @@ static int FIO_compressFilename_dstFile(FIO_ctx_t* const fCtx,
     int dstFd = -1;
 
     assert(AIO_ReadPool_getFile(ress.readCtx) != NULL);
-    if (AIO_WritePool_getFile(ress.writeCtx) == NULL) {
+    /*if (AIO_WritePool_getFile(ress.writeCtx) == NULL) {
         int dstFileInitialPermissions = DEFAULT_FILE_PERMISSIONS;
         if ( strcmp (srcFileName, stdinmark)
           && strcmp (dstFileName, stdoutmark)
           && UTIL_isRegularFileStat(srcFileStat) ) {
             transferStat = 1;
             dstFileInitialPermissions = TEMPORARY_FILE_PERMISSIONS;
-        }
+        }*/
 
         closeDstFile = 1;
-        DISPLAYLEVEL(6, "FIO_compressFilename_dstFile: opening dst: %s \n", dstFileName);
+        //DISPLAYLEVEL(6, "FIO_compressFilename_dstFile: opening dst: %s \n", dstFileName);
         {   FILE *dstFile = FIO_openDstFile(fCtx, prefs, srcFileName, dstFileName, dstFileInitialPermissions);
             if (dstFile==NULL) return 1;  /* could not open dstFileName */
             dstFd = fileno(dstFile);
-            AIO_WritePool_setFile(ress.writeCtx, dstFile);
+            //AIO_WritePool_setFile(ress.writeCtx, dstFile);
         }
         /* Must only be added after FIO_openDstFile() succeeds.
          * Otherwise we may delete the destination file if it already exists,
          * and the user presses Ctrl-C when asked if they wish to overwrite.
          */
-        addHandler(dstFileName);
+        //addHandler(dstFileName);
     }
 
     result = FIO_compressFilename_internal(fCtx, prefs, ress, dstFileName, srcFileName, compressionLevel);
@@ -1873,10 +1873,12 @@ static int FIO_compressFilename_dstFile(FIO_ctx_t* const fCtx,
         }
 
         DISPLAYLEVEL(6, "FIO_compressFilename_dstFile: closing dst: %s \n", dstFileName);
-        if (AIO_WritePool_closeFile(ress.writeCtx)) { /* error closing file */
-            DISPLAYLEVEL(1, "zstd: %s: %s \n", dstFileName, strerror(errno));
-            result=1;
-        }
+        
+	//if (AIO_WritePool_closeFile(ress.writeCtx)) { /* error closing file */
+        //    DISPLAYLEVEL(1, "zstd: %s: %s \n", dstFileName, strerror(errno));
+        //    result=1;
+       // }
+	
 
         if (transferStat) {
             UTIL_utime(dstFileName, srcFileStat);
@@ -2065,10 +2067,10 @@ FIO_compressFilename_srcFile(FIO_ctx_t* const fCtx,
         fileSize = UTIL_getFileSizeStat(&srcFileStat);
     if(fileSize != UTIL_FILESIZE_UNKNOWN && fileSize < ZSTD_BLOCKSIZE_MAX * 3) {
         AIO_ReadPool_setAsync(ress.readCtx, 0);
-        AIO_WritePool_setAsync(ress.writeCtx, 0);
+        //AIO_WritePool_setAsync(ress.writeCtx, 0);
     } else {
         AIO_ReadPool_setAsync(ress.readCtx, 1);
-        AIO_WritePool_setAsync(ress.writeCtx, 1);
+        //AIO_WritePool_setAsync(ress.writeCtx, 1);
     }
 
     AIO_ReadPool_setFile(ress.readCtx, srcFile);
@@ -2240,15 +2242,15 @@ int FIO_compressMultipleFilenames(FIO_ctx_t* const fCtx,
         if (dstFile == NULL) {  /* could not open outFileName */
             error = 1;
         } else {
-            AIO_WritePool_setFile(ress.writeCtx, dstFile);
+            //AIO_WritePool_setFile(ress.writeCtx, dstFile);
             for (; fCtx->currFileIdx < fCtx->nbFilesTotal; ++fCtx->currFileIdx) {
                 status = FIO_compressFilename_srcFile(fCtx, prefs, ress, outFileName, inFileNamesTable[fCtx->currFileIdx], compressionLevel);
                 if (!status) fCtx->nbFilesProcessed++;
                 error |= status;
             }
-            if (AIO_WritePool_closeFile(ress.writeCtx))
+            /*if (AIO_WritePool_closeFile(ress.writeCtx))
                 EXM_THROW(29, "Write error (%s) : cannot properly close %s",
-                            strerror(errno), outFileName);
+                            strerror(errno), outFileName);*/
         }
     } else {
         if (outMirroredRootDirName)
@@ -2356,7 +2358,7 @@ static dRess_t FIO_createDResources(FIO_prefs_t* const prefs, const char* dictFi
         }
     }
 
-    ress.writeCtx = AIO_WritePool_create(prefs, ZSTD_DStreamOutSize());
+    //ress.writeCtx = AIO_WritePool_create(prefs, ZSTD_DStreamOutSize());
     ress.readCtx = AIO_ReadPool_create(prefs, ZSTD_DStreamInSize());
     return ress;
 }
@@ -2365,7 +2367,7 @@ static void FIO_freeDResources(dRess_t ress)
 {
     FIO_freeDict(&(ress.dict));
     CHECK( ZSTD_freeDStream(ress.dctx) );
-    AIO_WritePool_free(ress.writeCtx);
+    //AIO_WritePool_free(ress.writeCtx);
     AIO_ReadPool_free(ress.readCtx);
 }
 
@@ -2823,22 +2825,22 @@ static int FIO_decompressDstFile(FIO_ctx_t* const fCtx,
     int transferStat = 0;
     int dstFd = 0;
 
-    if ((AIO_WritePool_getFile(ress.writeCtx) == NULL) && (prefs->testMode == 0)) {
+    /*if ((AIO_WritePool_getFile(ress.writeCtx) == NULL) && (prefs->testMode == 0)) {
         FILE *dstFile;
         int dstFilePermissions = DEFAULT_FILE_PERMISSIONS;
-        if ( strcmp(srcFileName, stdinmark)   /* special case : don't transfer permissions from stdin */
+        if ( strcmp(srcFileName, stdinmark)   /* special case : don't transfer permissions from stdin 
           && strcmp(dstFileName, stdoutmark)
           && UTIL_isRegularFileStat(srcFileStat) ) {
             transferStat = 1;
             dstFilePermissions = TEMPORARY_FILE_PERMISSIONS;
-        }
+        }*/
 
         releaseDstFile = 1;
 
         dstFile = FIO_openDstFile(fCtx, prefs, srcFileName, dstFileName, dstFilePermissions);
         if (dstFile==NULL) return 1;
         dstFd = fileno(dstFile);
-        AIO_WritePool_setFile(ress.writeCtx, dstFile);
+        //AIO_WritePool_setFile(ress.writeCtx, dstFile);
 
         /* Must only be added after FIO_openDstFile() succeeds.
          * Otherwise we may delete the destination file if it already exists,
@@ -2856,10 +2858,10 @@ static int FIO_decompressDstFile(FIO_ctx_t* const fCtx,
             UTIL_setFDStat(dstFd, dstFileName, srcFileStat);
         }
 
-        if (AIO_WritePool_closeFile(ress.writeCtx)) {
+        /*if (AIO_WritePool_closeFile(ress.writeCtx)) {
             DISPLAYLEVEL(1, "zstd: %s: %s \n", dstFileName, strerror(errno));
             result = 1;
-        }
+        }*/
 
         if (transferStat) {
             UTIL_utime(dstFileName, srcFileStat);
@@ -2901,10 +2903,10 @@ static int FIO_decompressSrcFile(FIO_ctx_t* const fCtx, FIO_prefs_t* const prefs
         fileSize = UTIL_getFileSizeStat(&srcFileStat);
     if(fileSize != UTIL_FILESIZE_UNKNOWN && fileSize < ZSTD_BLOCKSIZE_MAX * 3) {
         AIO_ReadPool_setAsync(ress.readCtx, 0);
-        AIO_WritePool_setAsync(ress.writeCtx, 0);
+        //AIO_WritePool_setAsync(ress.writeCtx, 0);
     } else {
         AIO_ReadPool_setAsync(ress.readCtx, 1);
-        AIO_WritePool_setAsync(ress.writeCtx, 1);
+        //AIO_WritePool_setAsync(ress.writeCtx, 1);
     }
 
     AIO_ReadPool_setFile(ress.readCtx, srcFile);
@@ -3095,16 +3097,16 @@ FIO_decompressMultipleFilenames(FIO_ctx_t* const fCtx,
         if (!prefs->testMode) {
             FILE* dstFile = FIO_openDstFile(fCtx, prefs, NULL, outFileName, DEFAULT_FILE_PERMISSIONS);
             if (dstFile == 0) EXM_THROW(19, "cannot open %s", outFileName);
-            AIO_WritePool_setFile(ress.writeCtx, dstFile);
+            //AIO_WritePool_setFile(ress.writeCtx, dstFile);
         }
         for (; fCtx->currFileIdx < fCtx->nbFilesTotal; fCtx->currFileIdx++) {
             status = FIO_decompressSrcFile(fCtx, prefs, ress, outFileName, srcNamesTable[fCtx->currFileIdx]);
             if (!status) fCtx->nbFilesProcessed++;
             error |= status;
         }
-        if ((!prefs->testMode) && (AIO_WritePool_closeFile(ress.writeCtx)))
+        /*if ((!prefs->testMode) && (AIO_WritePool_closeFile(ress.writeCtx)))
             EXM_THROW(72, "Write error : %s : cannot properly close output file",
-                        strerror(errno));
+                        strerror(errno));*/
     } else {
         if (outMirroredRootDirName)
             UTIL_mirrorSourceFilesDirectories(srcNamesTable, (unsigned)fCtx->nbFilesTotal, outMirroredRootDirName);
